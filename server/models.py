@@ -1,5 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import MetaData
+from sqlalchemy import MetaData, Table
 from sqlalchemy.orm import validates
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy_serializer import SerializerMixin
@@ -12,6 +12,12 @@ metadata = MetaData(
 
 db = SQLAlchemy(metadata=metadata)
 
+# Association table for many-to-many relationship between Car and Feature
+car_feature = Table('car_feature', db.Model.metadata,
+    db.Column('car_id', db.BigInteger, db.ForeignKey('cars.id'), primary_key=True),
+    db.Column('feature_id', db.BigInteger, db.ForeignKey('features.id'), primary_key=True)
+)
+
 class User(db.Model, SerializerMixin):
     __tablename__ = "users"
 
@@ -22,6 +28,7 @@ class User(db.Model, SerializerMixin):
     role = db.Column(db.Enum('admin', 'user', name='user_roles'), nullable=False)
     profile_image = db.Column(db.String(255), nullable=True)
     phone_number = db.Column(db.String(20), nullable=True)
+    email_confirmed = db.Column(db.Boolean, default=False)
     reviews = db.relationship('Review', backref='user', lazy=True)
     bookings = db.relationship('Booking', backref='user', lazy=True)
 
@@ -57,9 +64,21 @@ class Car(db.Model, SerializerMixin):
     owner_id = db.Column(db.BigInteger, db.ForeignKey('car_owners.id'), nullable=False)
     reviews = db.relationship('Review', backref='car', lazy=True)
     bookings = db.relationship('Booking', backref='car', lazy=True)
+    features = db.relationship('Feature', secondary=car_feature, backref=db.backref('cars', lazy='dynamic'))
 
     def __repr__(self):
         return f"<Car {self.make} {self.model} ({self.year})>"
+
+
+class Feature(db.Model, SerializerMixin):
+    __tablename__ = "features"
+
+    id = db.Column(db.BigInteger, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(255), nullable=False)
+
+    def __repr__(self):
+        return f"<Feature {self.name}>"
+
 
 
 class Review(db.Model, SerializerMixin):
