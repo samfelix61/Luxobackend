@@ -1,6 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import MetaData
-from sqlalchemy.orm import validates
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy_serializer import SerializerMixin
 
@@ -13,7 +12,7 @@ metadata = MetaData(
 db = SQLAlchemy(metadata=metadata)
 
 class User(db.Model, SerializerMixin):
-    _tablename_ = "users"
+    __tablename__ = "users"
 
     id = db.Column(db.BigInteger, primary_key=True)
     name = db.Column(db.String(255), nullable=False)
@@ -27,12 +26,12 @@ class User(db.Model, SerializerMixin):
 
     serialize_rules = ('-password', '-reviews.user', '-bookings.user')
 
-    def _repr_(self):
+    def __repr__(self):
         return f"<User {self.name}>"
 
 
 class CarOwner(db.Model, SerializerMixin):
-    _tablename_ = "car_owners"
+    __tablename__ = "car_owners"
 
     id = db.Column(db.BigInteger, primary_key=True)
     name = db.Column(db.String(255), nullable=False)
@@ -40,12 +39,12 @@ class CarOwner(db.Model, SerializerMixin):
     profile_image = db.Column(db.String(255), nullable=True)
     cars = db.relationship('Car', backref='car_owner', lazy=True)
 
-    def _repr_(self):
+    def __repr__(self):
         return f"<CarOwner {self.name}>"
 
 
 class Car(db.Model, SerializerMixin):
-    _tablename_ = "cars"
+    __tablename__ = "cars"
 
     id = db.Column(db.BigInteger, primary_key=True)
     make = db.Column(db.String(255), nullable=False)
@@ -58,12 +57,12 @@ class Car(db.Model, SerializerMixin):
     reviews = db.relationship('Review', backref='car', lazy=True)
     bookings = db.relationship('Booking', backref='car', lazy=True)
 
-    def _repr_(self):
+    def __repr__(self):
         return f"<Car {self.make} {self.model} ({self.year})>"
 
 
 class Review(db.Model, SerializerMixin):
-    _tablename_ = "reviews"
+    __tablename__ = "reviews"
 
     id = db.Column(db.BigInteger, primary_key=True)
     user_id = db.Column(db.BigInteger, db.ForeignKey('users.id'), nullable=False)
@@ -71,12 +70,12 @@ class Review(db.Model, SerializerMixin):
     rating = db.Column(db.Integer, nullable=False)
     comment = db.Column(db.Text, nullable=True)
 
-    def _repr_(self):
+    def __repr__(self):
         return f"<Review {self.rating} by User {self.user_id} for Car {self.car_id}>"
 
 
 class Booking(db.Model, SerializerMixin):
-    _tablename_ = "bookings"
+    __tablename__ = "bookings"
 
     id = db.Column(db.BigInteger, primary_key=True)
     user_id = db.Column(db.BigInteger, db.ForeignKey('users.id'), nullable=False)
@@ -85,5 +84,5 @@ class Booking(db.Model, SerializerMixin):
     end_date = db.Column(db.Date, nullable=False)
     car_owner_id = db.Column(db.BigInteger, nullable=False)
 
-    def _repr_(self):
+    def __repr__(self):
         return f"<Booking {self.id} by User {self.user_id} for Car {self.car_id}>"
