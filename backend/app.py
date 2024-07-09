@@ -4,14 +4,26 @@ from flask_jwt_extended import JWTManager, create_access_token, jwt_required, ge
 from flask_bcrypt import Bcrypt
 from datetime import timedelta
 from models import db, User, CarOwner, Car, Review, Booking
+from flask_migrate import Migrate 
+from models import User, CarOwner, Car, Review, Booking
 
-app = Flask(_name_)
+app = Flask(__name__)  
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///car_rental_platform.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JWT_SECRET_KEY'] = 'your_jwt_secret_key'
 db.init_app(app)
 jwt = JWTManager(app)
 bcrypt = Bcrypt(app)
+migrate = Migrate(app, db)
+db = SQLAlchemy(app)
+
+# Import your routes
+from backend.routes import *
+
+# # All route definitions
+
+if __name__ == "__main__":
+    app.run(debug=True)
 
 # User Registration
 @app.route('/register', methods=['POST'])
@@ -158,5 +170,5 @@ def admin_get_car_hires():
         'car_owner_id': hire.car_owner_id
     } for hire in car_hires])
 
-if _name_ == "_main_":
+if __name__ == "__main__":  
     app.run(debug=True)
